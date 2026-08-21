@@ -1,608 +1,330 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
- <head>
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TOY MANUFACTURING COSTING &amp; MATERIAL REQUIREMENTS SOFTWARE</title>
+  <title>TOY MANUFACTURING COSTING & MATERIAL REQUIREMENTS SOFTWARE</title>
+  <link rel="manifest" href="manifest.json">
   <style>
-        :root {
-            --primary: #1e3a8a;
-            --primary-hover: #1e40af;
-            --secondary: #0f766e;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #0f172a;
-            --text-muted: #64748b;
-            --border: #cbd5e1;
-            --border-light: #e2e8f0;
-            --danger: #ef4444;
-            --success: #10b981;
-        }
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #1e40af;
+      --secondary: #0f766e;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #cbd5e1;
+      --border-light: #e2e8f0;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            text-transform: uppercase;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            padding: 24px 16px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 20px;
+      line-height: 1.5;
+    }
 
-        header {
-            text-align: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 2px solid var(--border-light);
-        }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
 
-        header h1 {
-            color: var(--primary);
-            font-size: 26px;
-            margin-bottom: 6px;
-        }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
 
-        header p {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
+    header h1 {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
 
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 24px;
-        }
+    header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
 
-        @media (min-width: 900px) {
-            .main-layout {
-                grid-template-columns: 2fr 1fr;
-            }
-        }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
 
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
+    .card h2 {
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      color: var(--primary);
+      border-bottom: 2px solid var(--border-light);
+      padding-bottom: 8px;
+    }
 
-        .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
 
-        .form-group {
-            margin-bottom: 14px;
-        }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
 
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--text);
+    }
 
-        input[type="text"],
-        input[type="number"],
-        input[type="date"],
-        select {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 13px;
-            outline: none;
-            transition: border-color 0.2s;
-            background-color: #fff;
-            text-transform: uppercase;
-        }
+    input, select {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
 
-        input:focus, select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1);
-        }
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
 
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
 
-        .grid-container {
-            width: 100%;
-            overflow-x: auto;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            margin-bottom: 12px;
-        }
+    .results-table th, .results-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 0.9rem;
+    }
 
-        .fixed-grid {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-            min-width: 800px;
-        }
+    .results-table th {
+      background-color: #f1f5f9;
+      color: var(--primary);
+    }
 
-        .fixed-grid th {
-            background-color: #f1f5f9;
-            color: var(--primary);
-            font-size: 12px;
-            font-weight: 700;
-            text-align: left;
-            padding: 10px 8px;
-            border-bottom: 2px solid var(--border);
-            border-right: 1px solid var(--border-light);
-        }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
 
-        .fixed-grid th:last-child {
-            border-right: none;
-        }
+    .btn {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: white;
+    }
 
-        .fixed-grid td {
-            padding: 6px 8px;
-            border-bottom: 1px solid var(--border-light);
-            border-right: 1px solid var(--border-light);
-            vertical-align: middle;
-            background-color: #fff;
-        }
+    .btn-print {
+      background-color: var(--primary);
+    }
+    .btn-print:hover {
+      background-color: var(--primary-hover);
+    }
 
-        .fixed-grid td:last-child {
-            border-right: none;
-        }
+    .btn-pdf {
+      background-color: var(--secondary);
+    }
+    .btn-pdf:hover {
+      background-color: #0d5e56;
+    }
 
-        .subtotal-badge {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--secondary);
-            background-color: #f0fdf4;
-            padding: 6px 12px;
-            border-radius: 20px;
-            border: 1px solid #bbf7d0;
-            display: inline-block;
-        }
+    /* Print Optimization */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      .action-buttons, header p {
+        display: none !important;
+      }
+      .card {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin-bottom: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
 
-        .btn {
-            padding: 8px 14px;
-            border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s, opacity 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            text-transform: uppercase;
-        }
+  <div class="container">
+    <header>
+      <h1>TOY MANUFACTURING COSTING & MATERIAL REQUIREMENTS</h1>
+      <p>Injection Moulding Production & Bill of Materials Calculator</p>
+    </header>
 
-        .btn-primary { background-color: var(--primary); color: #ffffff; }
-        .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-secondary { background-color: var(--secondary); color: #ffffff; }
-        .btn-secondary:hover { opacity: 0.9; }
-        .btn-print { background-color: #334155; color: #ffffff; }
-        .btn-print:hover { background-color: #1e293b; }
-        .btn-warning { background-color: #d97706; color: #ffffff; }
-        .btn-warning:hover { background-color: #b45309; }
-        .btn-danger {
-            background-color: #fee2e2;
-            color: var(--danger);
-            padding: 4px 8px;
-            font-size: 12px;
-            border: 1px solid #fca5a5;
-        }
-        .btn-danger:hover { background-color: #ef4444; color: #ffffff; }
-        .btn-block { width: 100%; }
-
-        .img-preview-box {
-            width: 100%;
-            height: 180px;
-            border: 2px dashed var(--border);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #fafafa;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .img-preview-box img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-
-        .report-img-container {
-            display: none;
-        }
-
-        .summary-card {
-            position: sticky;
-            top: 20px;
-            background: #f8fafc;
-            border: 2px solid var(--primary);
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px dashed var(--border-light);
-            font-size: 14px;
-        }
-
-        .summary-row.total {
-            font-weight: 700;
-            font-size: 16px;
-            color: var(--primary);
-            border-bottom: 2px solid var(--primary);
-            margin-top: 8px;
-            padding-top: 12px;
-        }
-
-        .summary-row.selling {
-            font-weight: 700;
-            font-size: 18px;
-            color: var(--secondary);
-            border-bottom: none;
-            background: #e6fffa;
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 10px;
-        }
-
-        .breakdown-box {
-            margin-top: 12px;
-            padding: 10px;
-            background: #ffffff;
-            border: 1px solid var(--border-light);
-            border-radius: 6px;
-            font-size: 12px;
-        }
-
-        .breakdown-box h4 {
-            color: var(--primary);
-            margin-bottom: 6px;
-            font-size: 13px;
-        }
-
-        .breakdown-box.batch-box {
-            border: 1px solid var(--secondary);
-            background: #f0fdf4;
-        }
-
-        .breakdown-box.batch-box h4 {
-            color: var(--secondary);
-        }
-
-        .breakdown-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-            border-bottom: 1px dotted var(--border-light);
-        }
-
-        /* Modal Overlay for JSON Viewer */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-content {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            width: 80%;
-            max-width: 700px;
-            max-height: 80vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .modal-content textarea {
-            width: 100%;
-            height: 350px;
-            font-family: monospace;
-            font-size: 12px;
-            padding: 10px;
-            margin-top: 10px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background: #f1f5f9;
-        }
-
-        @media print {
-            body {
-                background-color: #ffffff;
-                padding: 0;
-                max-width: 100%;
-                font-size: 11px;
-            }
-            .no-print, header, .main-layout > div:first-child, .summary-card .card-title, .summary-card .breakdown-box:not(.batch-box), .btn {
-                display: none !important;
-            }
-            .summary-card {
-                position: static;
-                border: none;
-                box-shadow: none;
-                background: #ffffff;
-                padding: 0;
-            }
-            .report-img-container {
-                display: block;
-                text-align: center;
-                margin-bottom: 10px;
-            }
-            .report-img-container img {
-                max-height: 120px;
-                max-width: 100%;
-                object-fit: contain;
-                border: 1px solid var(--border);
-                border-radius: 4px;
-                padding: 2px;
-            }
-            .summary-row {
-                padding: 3px 0;
-                font-size: 11px;
-            }
-            .summary-row.total {
-                font-size: 12px;
-                margin-top: 4px;
-                padding-top: 6px;
-            }
-            .summary-row.selling {
-                font-size: 14px;
-                padding: 6px;
-                margin-top: 4px;
-            }
-            .breakdown-box.batch-box {
-                margin-top: 6px;
-                padding: 6px;
-                background: #f0fdf4 !important;
-                border: 1px solid var(--secondary);
-            }
-            .breakdown-item {
-                padding: 2px 0;
-                font-size: 10px;
-            }
-        }
-    </style>
- </head>
- <body>
-  <header>
-   <h1>TOY MANUFACTURING COSTING &amp; MATERIAL REQUIREMENTS SOFTWARE</h1>
-   <p>BATCH QUANTITY PLANNING, GRANULES, SHADE CONTROL, CONTRACTOR LABOR, IMPORT &amp; DAMAGE LOGGING</p>
-  </header>
-  <div class="main-layout">
-   <div>
+    <!-- Product & Production Parameters -->
     <div class="card">
-     <div class="card-title">1. PRODUCTION BATCH &amp; IDENTIFICATION</div>
-     <div class="grid-2">
-      <div>
-       <div class="form-group">
-        <label for="toyName">TOY NAME / ITEM CODE</label> <input type="text" id="toyName" value="ELEPHANT 1125" oninput="calculate()">
-       </div>
-       <div class="form-group" style="background: #eef2ff; padding: 8px; border-radius: 6px; border: 1px solid #c7d2fe;">
-        <label for="batchPieces" style="color: var(--primary); font-weight: 700;">NUMBER OF PIECES TO MAKE (BATCH SIZE)</label> 
-        <input type="number" id="batchPieces" value="5963" style="font-size: 15px; font-weight: bold;" oninput="calculate()">
-       </div>
-       <div class="form-group">
-        <label for="rmbRate">RMB EXCHANGE RATE (PKR / 1 RMB)</label> <input type="number" id="rmbRate" value="39.00" step="0.1" oninput="calculate()">
-       </div>
-       <div class="form-group">
-        <label for="toyImageInput">UPLOAD TOY PICTURE</label> <input type="file" id="toyImageInput" accept="image/*" onchange="previewImage(event)">
-       </div>
+      <h2>1. Production Specifications</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="toyName">Toy Item Name</label>
+          <input type="text" id="toyName" value="Plastic Friction Car">
+        </div>
+        <div class="form-group">
+          <label for="batchSize">Batch / Order Quantity (Units)</label>
+          <input type="number" id="batchSize" value="1000" oninput="calculateCost()">
+        </div>
+        <div class="form-group">
+          <label for="shotWeight">Part Shot Weight (grams)</label>
+          <input type="number" id="shotWeight" value="120" oninput="calculateCost()">
+        </div>
+        <div class="form-group">
+          <label for="materialCostPerKg">Resin Cost per Kg (PKR)</label>
+          <input type="number" id="materialCostPerKg" value="450" oninput="calculateCost()">
+        </div>
       </div>
-      <div>
-       <label>IMAGE PREVIEW</label>
-       <div class="img-preview-box" id="imgPreviewBox">
-        <span style="color: var(--text-muted); font-size: 12px;">NO IMAGE SELECTED</span>
-       </div>
+    </div>
+
+    <!-- Overhead & Processing Costs -->
+    <div class="card">
+      <h2>2. Machine & Processing Overheads</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="machineCapacity">Moulding Machine Size</label>
+          <select id="machineCapacity">
+            <option value="90">90-Ton Machine</option>
+            <option value="120">120-Ton Machine</option>
+            <option value="160" selected>160-Ton Machine</option>
+            <option value="200">200-Ton Machine</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cycleTime">Cycle Time (Seconds)</label>
+          <input type="number" id="cycleTime" value="35" oninput="calculateCost()">
+        </div>
+        <div class="form-group">
+          <label for="hourlyRate">Machine Hourly Rate (PKR)</label>
+          <input type="number" id="hourlyRate" value="2500" oninput="calculateCost()">
+        </div>
+        <div class="form-group">
+          <label for="labourPackaging">Assembly & Packaging per unit (PKR)</label>
+          <input type="number" id="labourPackaging" value="15" oninput="calculateCost()">
+        </div>
       </div>
-     </div>
     </div>
+
+    <!-- Cost Breakdown Report -->
     <div class="card">
-     <div class="card-title">
-      <span>2. RAW MATERIAL GRID (PP GRANULES &amp; PARTS)</span>
-      <button class="btn btn-secondary" onclick="addGranuleRow()">+ ADD ROW</button>
-     </div>
-     <div class="grid-container">
-      <table class="fixed-grid">
-       <thead>
+      <h2>3. Cost Summary & Material Requirements</h2>
+      <table class="results-table">
         <tr>
-         <th style="width: 20%;">PART / COMPONENT</th>
-         <th style="width: 18%;">GRANULE GRADE</th>
-         <th style="width: 16%;">COLOUR &amp; SHADE NO.</th>
-         <th style="width: 11%;">WEIGHT (G)</th>
-         <th style="width: 14%;">RATE (RS./KG)</th>
-         <th style="width: 13%;">TOTAL BATCH COST (RS.)</th>
-         <th style="width: 8%; text-align: center;">ACTION</th>
+          <th>Cost Component</th>
+          <th>Calculation Metric</th>
+          <th>Total Cost (PKR)</th>
         </tr>
-       </thead>
-       <tbody id="granulesTable"></tbody>
-      </table>
-     </div>
-     <div class="subtotal-badge" id="ppSubtotal">PP GRANULES TOTAL: RS. 0.00 (0G)</div>
-    </div>
-    <div class="card">
-     <div class="card-title">
-      <span>3. CONTRACTOR &amp; FITTING LABOR GRID</span>
-      <button class="btn btn-secondary" onclick="addLaborRow()">+ ADD LABOR ROW</button>
-     </div>
-     <div class="grid-container">
-      <table class="fixed-grid" style="min-width: 550px;">
-       <thead>
         <tr>
-         <th style="width: 45%;">ASSEMBLY / JOB NAME</th>
-         <th style="width: 25%;">RATE PER PIECE (RS.)</th>
-         <th style="width: 22%;">TOTAL BATCH COST (RS.)</th>
-         <th style="width: 8%; text-align: center;">ACTION</th>
+          <td>Total Resin Required</td>
+          <td id="resReqVal">120.00 kg</td>
+          <td id="resCostVal">PKR 54,000</td>
         </tr>
-       </thead>
-       <tbody id="laborTable"></tbody>
-      </table>
-     </div>
-     <div class="subtotal-badge" id="laborSubtotal">LABOR TOTAL: RS. 0.00</div>
-    </div>
-    <div class="card">
-     <div class="card-title">
-      <span>4. RENT &amp; FACTORY OVERHEADS GRID</span>
-      <button class="btn btn-secondary" onclick="addOverheadRow()">+ ADD OVERHEAD ROW</button>
-     </div>
-     <div class="grid-container">
-      <table class="fixed-grid" style="min-width: 650px;">
-       <thead>
         <tr>
-         <th style="width: 38%;">EXPENSE NAME</th>
-         <th style="width: 24%;">RATE PER PIECE (RS.)</th>
-         <th style="width: 30%;">TOTAL BATCH COST (RS.)</th>
-         <th style="width: 8%; text-align: center;">ACTION</th>
+          <td>Machine Processing Cost</td>
+          <td id="machTimeVal">9.72 Hours</td>
+          <td id="machCostVal">PKR 24,305</td>
         </tr>
-       </thead>
-       <tbody id="overheadTable"></tbody>
-      </table>
-     </div>
-     <div class="subtotal-badge" id="overheadSubtotal">OVERHEAD TOTAL: RS. 0.00 / UNIT</div>
-    </div>
-    <div class="card">
-     <div class="card-title">
-      <span>5. MOULDING / MACHINE TIME COST GRID</span>
-      <button class="btn btn-secondary" onclick="addMouldingRow()">+ ADD MOULDING ROW</button>
-     </div>
-     <div class="grid-container">
-      <table class="fixed-grid" style="min-width: 650px;">
-       <thead>
         <tr>
-         <th style="width: 32%;">PART / COMPONENT</th>
-         <th style="width: 28%;">MACHINE</th>
-         <th style="width: 30%;">TOTAL BATCH COST (RS.)</th>
-         <th style="width: 10%; text-align: center;">ACTION</th>
+          <td>Assembly & Packaging Cost</td>
+          <td id="packQtyVal">1,000 Units</td>
+          <td id="packCostVal">PKR 15,000</td>
         </tr>
-       </thead>
-       <tbody id="mouldingTable"></tbody>
-      </table>
-     </div>
-     <div class="subtotal-badge" id="mouldingSubtotal">MOULDING COST: RS. 0.00</div>
-    </div>
-    <div class="card">
-     <div class="card-title">
-      <span>6. ACCESSORIES IMPORT GRID (WITH IMPORT ID &amp; DATE)</span>
-      <button class="btn btn-secondary" onclick="addImportAccessoryRow()">+ ADD IMPORT BATCH</button>
-     </div>
-     <div class="grid-container">
-      <table class="fixed-grid" style="min-width: 900px;">
-       <thead>
-        <tr>
-         <th style="width: 18%;">IMPORT ID</th>
-         <th style="width: 16%;">DATE</th>
-         <th style="width: 26%;">ITEM NAME</th>
-         <th style="width: 14%;">CURRENCY &amp; RATE</th>
-         <th style="width: 18%;">TOTAL BATCH COST</th>
-         <th style="width: 8%; text-align: center;">ACTION</th>
+        <tr style="font-weight: bold; background: #f8fafc;">
+          <td colspan="2">Estimated Total Production Cost</td>
+          <td id="grandTotalVal" style="color: var(--primary);">PKR 93,305</td>
         </tr>
-       </thead>
-       <tbody id="importAccessoriesTable"></tbody>
-      </table>
-     </div>
-     <div class="subtotal-badge" id="importAccSubtotal">IMPORT ACCESSORIES TOTAL: RS. 0.00</div>
-    </div>
-    <div class="card" style="border: 2px dashed var(--secondary); background: #f8fafc;">
-     <div class="card-title" style="color: var(--secondary);">
-      <span>7. IMPORTED ACCESSORIES WASTAGE / DAMAGE LOG</span>
-      <button class="btn btn-secondary" onclick="addWastageRow()">+ LOG WASTAGE / DAMAGE</button>
-     </div>
-     <div class="grid-container">
-      <table class="fixed-grid" style="min-width: 800px;">
-       <thead>
-        <tr>
-         <th style="width: 40%;">SELECT IMPORT ID &amp; ITEM</th>
-         <th style="width: 22%;">WASTED / DAMAGED QTY</th>
-         <th style="width: 30%;">COST ABSORPTION IMPACT</th>
-         <th style="width: 8%; text-align: center;">ACTION</th>
+        <tr style="font-weight: bold; background: #f8fafc;">
+          <td colspan="2">Cost Per Individual Unit</td>
+          <td id="perUnitVal" style="color: var(--secondary);">PKR 93.31</td>
         </tr>
-       </thead>
-       <tbody id="wastageTable"></tbody>
       </table>
-     </div>
-     <div class="subtotal-badge" id="wastageSubtotal" style="background:#fff1f2; color:#be123c; border-color:#fecdd3;">TOTAL DAMAGE COST ABSORPTION: RS. 0.00</div>
     </div>
-    <div class="card">
-     <div class="card-title">
-      <span>8. ACCESSORIES USED IN MAKING TOY</span>
-      <button class="btn btn-secondary" onclick="addToyAccessoryRow()">+ ADD ACCESSORY</button>
-     </div>
-     <div class="grid-container">
-      <table class="fixed-grid" style="min-width: 750px;">
-       <thead>
-        <tr>
-         <th style="width: 30%;">ITEM NAME</th>
-         <th style="width: 22%;">CURRENCY</th>
-         <th style="width: 20%;">RATE</th>
-         <th style="width: 20%;">TOTAL BATCH COST (RS.)</th>
-         <th style="width: 8%; text-align: center;">ACTION</th>
-        </tr>
-       </thead>
-       <tbody id="toyAccessoriesTable"></tbody>
-      </table>
-     </div>
-     <div class="subtotal-badge" id="toyAccSubtotal">TOY ACCESSORIES TOTAL: RS. 0.00</div>
+
+    <!-- Action Buttons for Print / PDF -->
+    <div class="action-buttons">
+      <button class="btn btn-print" onclick="window.print()">
+        🖨️ Print Costing Sheet
+      </button>
+      <button class="btn btn-pdf" onclick="exportToPDF()">
+        📥 Save / Export to PDF
+      </button>
     </div>
-    <div class="card">
-     <div class="card-title">9. PACKING &amp; PROFIT MARGIN</div>
-     <div class="grid-2">
-      <div class="form-group">
-       <label for="packingCost">PACKING COST PER PIECE / FIXED BOX (RS.)</label> <input type="number" id="packingCost" value="20" step="0.5" oninput="calculate()">
-      </div>
-      <div class="form-group">
-       <label for="profitMargin">DESIRED PROFIT MARGIN (%)</label> <input type="number" id="profitMargin" value="20" step="1" oninput="calculate()">
-      </div>
-     </div>
-    </div>
-   </div>
-   <div>
-    <div class="card summary-card">
-     <div class="card-title">COST SUMMARY (PER PIECE)</div>
-     <div class="report-img-container" id="reportImgContainer">
-      <span style="color: var(--text-muted); font-size: 10px;">[NO IMAGE]</span>
-     </div>
-     <div class="summary-row">
-      <span>PP GRANULES TOTAL:</span><span id="sumPP">RS. 0.00</span>
-     </div>
-     <div class="summary-row">
-      <span>CONTRACTOR LABOR:</span><span id="sumLabor">RS. 0.00</span>
-     </div>
-     <div class="summary-row">
-      <span>RENT &amp; OVERHEADS:</span><span id="sumOverhead">RS. 0.00</span>
-     </div>
-     <div class="summary-row">
-      <span>MOULDING COST:</span><span id="sumMoulding">RS. 0.00</span>
-     </div>
-     <div class="summary-row">
-      <span>IMPORT ACCESSORIES:</span><span id="sumImportAcc">RS. 0.00</span>
-     </div>
-     <div class="summary-row" style="color:#be123c;">
-      <span>IMPORT DAMAGE/WASTAGE:</span><span id="sumWastage">RS. 0.00</span>
-     </div>
-     <div class="summary-row">
-      <span>TOY ACCESSORIES:</span><span id
+  </div>
+
+  <script>
+    function calculateCost() {
+      const batchSize = parseFloat(document.getElementById('batchSize').value) || 0;
+      const shotWeight = parseFloat(document.getElementById('shotWeight').value) || 0;
+      const materialCostPerKg = parseFloat(document.getElementById('materialCostPerKg').value) || 0;
+      const cycleTime = parseFloat(document.getElementById('cycleTime').value) || 0;
+      const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+      const labourPackaging = parseFloat(document.getElementById('labourPackaging').value) || 0;
+
+      // 1. Material Calculations (adding 3% scrap allowance)
+      const totalResinKg = (batchSize * shotWeight * 1.03) / 1000;
+      const totalResinCost = totalResinKg * materialCostPerKg;
+
+      // 2. Machine Processing Time & Cost
+      const totalSeconds = batchSize * cycleTime;
+      const totalHours = totalSeconds / 3600;
+      const totalMachineCost = totalHours * hourlyRate;
+
+      // 3. Packaging & Assembly
+      const totalPackagingCost = batchSize * labourPackaging;
+
+      // 4. Totals
+      const grandTotal = totalResinCost + totalMachineCost + totalPackagingCost;
+      const costPerUnit = batchSize > 0 ? grandTotal / batchSize : 0;
+
+      // Update UI Display
+      document.getElementById('resReqVal').innerText = totalResinKg.toFixed(2) + ' kg (incl. 3% scrap)';
+      document.getElementById('resCostVal').innerText = 'PKR ' + totalResinCost.toLocaleString(undefined, {maximumFractionDigits: 0});
+      
+      document.getElementById('machTimeVal').innerText = totalHours.toFixed(2) + ' Hours';
+      document.getElementById('machCostVal').innerText = 'PKR ' + totalMachineCost.toLocaleString(undefined, {maximumFractionDigits: 0});
+      
+      document.getElementById('packQtyVal').innerText = batchSize.toLocaleString() + ' Units';
+      document.getElementById('packCostVal').innerText = 'PKR ' + totalPackagingCost.toLocaleString(undefined, {maximumFractionDigits: 0});
+      
+      document.getElementById('grandTotalVal').innerText = 'PKR ' + grandTotal.toLocaleString(undefined, {maximumFractionDigits: 0});
+      document.getElementById('perUnitVal').innerText = 'PKR ' + costPerUnit.toFixed(2);
+    }
+
+    function exportToPDF() {
+      // Triggers browser native print window, configured to save as PDF on mobile/desktop
+      window.print();
+    }
+
+    // Run initial calculation on load
+    window.onload = calculateCost;
+  </script>
+</body>
+</html>
