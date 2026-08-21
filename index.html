@@ -133,7 +133,7 @@
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
-            min-width: 850px;
+            min-width: 800px;
         }
 
         .fixed-grid th {
@@ -368,7 +368,7 @@
  <body>
   <header>
    <h1>TOY MANUFACTURING COSTING &amp; MATERIAL REQUIREMENTS SOFTWARE</h1>
-   <p>BATCH QUANTITY PLANNING, GRANULES, SHADE CONTROL, CONTRACTOR LABOR, OVERHEADS, DUAL CURRENCY &amp; DAMAGE/WASTAGE TRACKING</p>
+   <p>BATCH QUANTITY PLANNING, GRANULES, SHADE CONTROL, CONTRACTOR LABOR, OVERHEADS &amp; CHINA IMPORT DAMAGED SYSTEM</p>
   </header>
   <div class="main-layout">
    <div>
@@ -482,17 +482,17 @@
     </div>
     <div class="card">
      <div class="card-title">
-      <span>6. ACCESSORIES IMPORT GRID (INCL. DAMAGE / WASTAGE)</span>
+      <span>6. CHINA IMPORT ACCESSORIES GRID (WITH DAMAGED/WASTAGE SYSTEM)</span>
       <button class="btn btn-secondary" onclick="addImportAccessoryRow()">+ ADD IMPORT ACCESSORY</button>
      </div>
      <div class="grid-container">
-      <table class="fixed-grid" style="min-width: 900px;">
+      <table class="fixed-grid" style="min-width: 850px;">
        <thead>
         <tr>
          <th style="width: 26%;">ITEM NAME</th>
-         <th style="width: 16%;">CURRENCY</th>
+         <th style="width: 18%;">CURRENCY</th>
          <th style="width: 18%;">RATE</th>
-         <th style="width: 16%;">DAMAGED / WASTAGE (%)</th>
+         <th style="width: 14%;">DAMAGED / WASTAGE %</th>
          <th style="width: 16%;">TOTAL BATCH COST (RS.)</th>
          <th style="width: 8%; text-align: center;">ACTION</th>
         </tr>
@@ -504,18 +504,17 @@
     </div>
     <div class="card">
      <div class="card-title">
-      <span>7. ACCESSORIES USED IN MAKING TOY (INCL. DAMAGE / WASTAGE)</span>
+      <span>7. ACCESSORIES USED IN MAKING TOY (NAME, CURRENCY, RATE)</span>
       <button class="btn btn-secondary" onclick="addToyAccessoryRow()">+ ADD ACCESSORY</button>
      </div>
      <div class="grid-container">
-      <table class="fixed-grid" style="min-width: 900px;">
+      <table class="fixed-grid" style="min-width: 750px;">
        <thead>
         <tr>
-         <th style="width: 26%;">ITEM NAME</th>
-         <th style="width: 16%;">CURRENCY</th>
-         <th style="width: 18%;">RATE</th>
-         <th style="width: 16%;">DAMAGED / WASTAGE (%)</th>
-         <th style="width: 16%;">TOTAL BATCH COST (RS.)</th>
+         <th style="width: 30%;">ITEM NAME</th>
+         <th style="width: 22%;">CURRENCY</th>
+         <th style="width: 20%;">RATE</th>
+         <th style="width: 20%;">TOTAL BATCH COST (RS.)</th>
          <th style="width: 8%; text-align: center;">ACTION</th>
         </tr>
        </thead>
@@ -593,7 +592,7 @@
       <div id="mouldingBreakdownList"></div>
      </div>
      <div class="breakdown-box">
-      <h4>IMPORT ACCESSORIES BREAKDOWN</h4>
+      <h4>IMPORT ACCESSORIES BREAKDOWN (WITH DAMAGE %)</h4>
       <div id="importAccBreakdownList"></div>
      </div>
      <div class="breakdown-box">
@@ -631,11 +630,11 @@
         ];
 
         let importAccessories = [
-            { name: 'STICKER SHEETS', currency: 'RMB', rate: 1.50, damagePct: 2 }
+            { name: 'STICKER SHEETS', currency: 'RMB', rate: 1.50, damagePct: 5 }
         ];
 
         let toyAccessories = [
-            { name: 'AXLE RODS', currency: 'RMB', rate: 2.50, damagePct: 1 }
+            { name: 'AXLE RODS', currency: 'RMB', rate: 2.50 }
         ];
 
         function previewImage(event) {
@@ -793,7 +792,7 @@
                         </select>
                     </td>
                     <td><input type="number" value="${acc.rate || 0}" step="0.1" oninput="updateImportAcc(${index}, 'rate', this.value)"></td>
-                    <td><input type="number" value="${acc.damagePct || 0}" step="0.5" min="0" max="100" oninput="updateImportAcc(${index}, 'damagePct', this.value)"></td>
+                    <td><input type="number" value="${acc.damagePct || 0}" step="0.5" placeholder="%" oninput="updateImportAcc(${index}, 'damagePct', this.value)"></td>
                     <td style="font-weight: 600;" id="importAccCost_${index}">RS. ${batchTotal.toLocaleString('en-PK', {maximumFractionDigits: 2})}</td>
                     <td style="text-align: center;"><button class="btn btn-danger" onclick="removeImportAccessoryRow(${index})">✕</button></td>
                 `;
@@ -818,14 +817,12 @@
         function renderToyAccessories() {
             const tbody = document.getElementById('toyAccessoriesTable');
             const batchPcs = parseFloat(document.getElementById('batchPieces').value) || 1;
-            const rmbVal = parseFloat(document.getElementById('rmbRate').value) || 39;
             tbody.innerHTML = '';
             toyAccessories.forEach((acc, index) => {
                 const tr = document.createElement('tr');
-                const baseUnitPkr = acc.currency === 'RMB' ? (acc.rate || 0) * rmbVal : (acc.rate || 0);
-                const damageMultiplier = 1 + ((acc.damagePct || 0) / 100);
-                const effectiveUnitPkr = baseUnitPkr * damageMultiplier;
-                const batchTotal = effectiveUnitPkr * batchPcs;
+                const rmbVal = parseFloat(document.getElementById('rmbRate').value) || 39;
+                const unitCostPkr = acc.currency === 'RMB' ? (acc.rate || 0) * rmbVal : (acc.rate || 0);
+                const batchTotal = unitCostPkr * batchPcs;
 
                 tr.innerHTML = `
                     <td><input type="text" value="${acc.name}" oninput="updateToyAcc(${index}, 'name', this.value)"></td>
@@ -836,7 +833,6 @@
                         </select>
                     </td>
                     <td><input type="number" value="${acc.rate || 0}" step="0.1" oninput="updateToyAcc(${index}, 'rate', this.value)"></td>
-                    <td><input type="number" value="${acc.damagePct || 0}" step="0.5" min="0" max="100" oninput="updateToyAcc(${index}, 'damagePct', this.value)"></td>
                     <td style="font-weight: 600;" id="toyAccCost_${index}">RS. ${batchTotal.toLocaleString('en-PK', {maximumFractionDigits: 2})}</td>
                     <td style="text-align: center;"><button class="btn btn-danger" onclick="removeToyAccessoryRow(${index})">✕</button></td>
                 `;
@@ -845,7 +841,7 @@
             calculate();
         }
 
-        function addToyAccessoryRow() { toyAccessories.push({ name: '', currency: 'RMB', rate: 0, damagePct: 0 }); renderToyAccessories(); }
+        function addToyAccessoryRow() { toyAccessories.push({ name: '', currency: 'RMB', rate: 0 }); renderToyAccessories(); }
         function removeToyAccessoryRow(index) { toyAccessories.splice(index, 1); renderToyAccessories(); }
         function updateToyAcc(index, field, value) {
             if (field === 'currency' || field === 'name') {
@@ -933,8 +929,9 @@
             const importAccBreakdown = document.getElementById('importAccBreakdownList');
             importAccBreakdown.innerHTML = '';
             importAccessories.forEach((acc, index) => {
-                const basePkr = acc.currency === 'RMB' ? (acc.rate || 0) * rmbRate : (acc.rate || 0);
-                const effectiveUnitPkr = basePkr * (1 + ((acc.damagePct || 0) / 100));
+                const baseUnitPkr = acc.currency === 'RMB' ? (acc.rate || 0) * rmbRate : (acc.rate || 0);
+                const damageMultiplier = 1 + ((acc.damagePct || 0) / 100);
+                const effectiveUnitPkr = baseUnitPkr * damageMultiplier;
                 const batchCost = effectiveUnitPkr * batchPcs;
                 totalImportAccCost += effectiveUnitPkr;
 
@@ -942,7 +939,8 @@
                 if(rowEl) rowEl.innerText = `RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 2})}`;
 
                 if (acc.name) {
-                    importAccBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${acc.name}</b> (${acc.currency}, ${acc.damagePct || 0}% dam.)</span><span>RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
+                    const requiredQty = Math.round(batchPcs * damageMultiplier);
+                    importAccBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${acc.name}</b> (${acc.currency}, ${acc.damagePct || 0}% Damaged Buffer $\rightarrow$ ${requiredQty.toLocaleString()} Pcs Req)</span><span>RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
                 }
             });
 
@@ -950,16 +948,15 @@
             const toyAccBreakdown = document.getElementById('toyAccBreakdownList');
             toyAccBreakdown.innerHTML = '';
             toyAccessories.forEach((acc, index) => {
-                const basePkr = acc.currency === 'RMB' ? (acc.rate || 0) * rmbRate : (acc.rate || 0);
-                const effectiveUnitPkr = basePkr * (1 + ((acc.damagePct || 0) / 100));
-                const batchCost = effectiveUnitPkr * batchPcs;
-                totalToyAccCost += effectiveUnitPkr;
+                const unitPkr = acc.currency === 'RMB' ? (acc.rate || 0) * rmbRate : (acc.rate || 0);
+                const batchCost = unitPkr * batchPcs;
+                totalToyAccCost += unitPkr;
 
                 const rowEl = document.getElementById(`toyAccCost_${index}`);
                 if(rowEl) rowEl.innerText = `RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 2})}`;
 
                 if (acc.name) {
-                    toyAccBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${acc.name}</b> (${acc.currency}, ${acc.damagePct || 0}% dam.)</span><span>RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
+                    toyAccBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${acc.name}</b> (${acc.currency})</span><span>RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
                 }
             });
 
@@ -1001,22 +998,21 @@
             });
 
             importAccessories.forEach(acc => {
-                const basePkr = acc.currency === 'RMB' ? (acc.rate || 0) * rmbRate : (acc.rate || 0);
-                const effectiveUnitPkr = basePkr * (1 + ((acc.damagePct || 0) / 100));
+                const baseUnitPkr = acc.currency === 'RMB' ? (acc.rate || 0) * rmbRate : (acc.rate || 0);
+                const damageMultiplier = 1 + ((acc.damagePct || 0) / 100);
+                const effectiveUnitPkr = baseUnitPkr * damageMultiplier;
                 const itemBatchTotal = effectiveUnitPkr * batchPcs;
-                const totalQtyNeeded = Math.ceil(batchPcs * (1 + ((acc.damagePct || 0) / 100)));
+                const reqQty = Math.round(batchPcs * damageMultiplier);
                 if(acc.name) {
-                    batchBreakdown.innerHTML += `<div class="breakdown-item"><span>💍 <b>IMPORT ACC (${acc.name}):</b> Need ~${totalQtyNames(totalQtyNeeded)} pcs</span><span>RS. ${itemBatchTotal.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
+                    batchBreakdown.innerHTML += `<div class="breakdown-item"><span>💍 <b>IMPORT ACC (${acc.name}):</b> ${reqQty.toLocaleString()} Pcs (${acc.damagePct || 0}% Damaged Buffer)</span><span>RS. ${itemBatchTotal.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
                 }
             });
 
             toyAccessories.forEach(acc => {
-                const basePkr = acc.currency === 'RMB' ? (acc.rate || 0) * rmbRate : (acc.rate || 0);
-                const effectiveUnitPkr = basePkr * (1 + ((acc.damagePct || 0) / 100));
-                const itemBatchTotal = effectiveUnitPkr * batchPcs;
-                const totalQtyNeeded = Math.ceil(batchPcs * (1 + ((acc.damagePct || 0) / 100)));
+                const unitPkr = acc.currency === 'RMB' ? (acc.rate || 0) * rmbRate : (acc.rate || 0);
+                const itemBatchTotal = unitPkr * batchPcs;
                 if(acc.name) {
-                    batchBreakdown.innerHTML += `<div class="breakdown-item"><span>💍 <b>TOY ACC (${acc.name}):</b> Need ~${totalQtyNames(totalQtyNeeded)} pcs</span><span>RS. ${itemBatchTotal.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
+                    batchBreakdown.innerHTML += `<div class="breakdown-item"><span>💍 <b>TOY ACC (${acc.name}):</b></span><span>RS. ${itemBatchTotal.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
                 }
             });
 
@@ -1043,10 +1039,6 @@
             document.getElementById('sumTotalCost').innerText = `RS. ${totalCost.toFixed(2)}`;
             document.getElementById('sumProfit').innerText = `RS. ${profitVal.toFixed(2)}`;
             document.getElementById('sumSelling').innerText = `RS. ${sellingPrice.toFixed(2)}`;
-        }
-
-        function totalQtyNames(val) {
-            return val.toLocaleString('en-PK');
         }
 
         renderGranules();
