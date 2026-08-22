@@ -659,8 +659,8 @@
             tbody.innerHTML = '';
             granules.forEach((g, index) => {
                 const tr = document.createElement('tr');
-                const pkrUnit = ((g.weight || 0) / 1000) * (g.rate || 0);
-                const pkrBatchTotal = pkrUnit * batchPcs;
+                const unitCost = ((g.weight || 0) / 1000) * (g.rate || 0);
+                const pkrBatchTotal = unitCost * batchPcs;
                 tr.innerHTML = `
                     <td><input type="text" value="${g.part}" oninput="updateGranule(${index}, 'part', this.value)"></td>
                     <td><input type="text" value="${g.grade}" oninput="updateGranule(${index}, 'grade', this.value)"></td>
