@@ -399,7 +399,7 @@
     </div>
     <div class="card">
      <div class="card-title">
-      <span>2. RAW MATERIAL GRID (PP GRANULES &amp; PARTS)</span>
+      <span>2. RAW MATERIAL GRID (PP GRANULES &amp; PARTS) - <small style="font-size:11px; color:var(--text-muted);">Enter weight in grams per single piece</small></span>
       <button class="btn btn-secondary" onclick="addGranuleRow()">+ ADD ROW</button>
      </div>
      <div class="grid-container">
@@ -409,7 +409,7 @@
          <th style="width: 20%;">PART / COMPONENT</th>
          <th style="width: 18%;">GRANULE GRADE</th>
          <th style="width: 16%;">COLOUR &amp; SHADE NO.</th>
-         <th style="width: 11%;">WEIGHT (G)</th>
+         <th style="width: 11%;">1-PC WT (G)</th>
          <th style="width: 14%;">RATE (RS./KG)</th>
          <th style="width: 13%;">TOTAL BATCH COST (RS.)</th>
          <th style="width: 8%; text-align: center;">ACTION</th>
@@ -418,7 +418,7 @@
        <tbody id="granulesTable"></tbody>
       </table>
      </div>
-     <div class="subtotal-badge" id="ppSubtotal">PP GRANULES TOTAL: RS. 0.00 (0G)</div>
+     <div class="subtotal-badge" id="ppSubtotal">PP GRANULES TOTAL: RS. 0.00 (0G / PCS)</div>
     </div>
     <div class="card">
      <div class="card-title">
@@ -482,16 +482,16 @@
     </div>
     <div class="card">
      <div class="card-title">
-      <span>6. CHINA IMPORT ACCESSORIES GRID (WITH DAMAGED/WASTAGE SYSTEM)</span>
+      <span>6. CHINA IMPORT ACCESSORIES GRID (WITH WEIGHT, RATE/KG &amp; DAMAGED SYSTEM)</span>
       <button class="btn btn-secondary" onclick="addImportAccessoryRow()">+ ADD IMPORT ACCESSORY</button>
      </div>
      <div class="grid-container">
-      <table class="fixed-grid" style="min-width: 850px;">
+      <table class="fixed-grid" style="min-width: 900px;">
        <thead>
         <tr>
-         <th style="width: 26%;">ITEM NAME</th>
-         <th style="width: 18%;">CURRENCY</th>
-         <th style="width: 18%;">RATE</th>
+         <th style="width: 24%;">ITEM NAME</th>
+         <th style="width: 14%;">WT (G) / PC</th>
+         <th style="width: 16%;">RATE (RS./KG)</th>
          <th style="width: 14%;">DAMAGED / WASTAGE %</th>
          <th style="width: 16%;">TOTAL BATCH COST (RS.)</th>
          <th style="width: 8%; text-align: center;">ACTION</th>
@@ -610,8 +610,8 @@
         let currentImageData = "";
 
         let granules = [
-            { part: 'BODY', grade: 'PP', colour: 'RED', shadeNo: 'R-11', weight: 450, rate: 644 },
-            { part: 'CAR COVER', grade: 'PP HOMO', colour: 'YELLOW', shadeNo: 'Y-21', weight: 50, rate: 440 }
+            { part: 'BODY', grade: 'PP', colour: 'RED', shadeNo: 'R-11', weight: 45, rate: 644 },
+            { part: 'CAR COVER', grade: 'PP HOMO', colour: 'YELLOW', shadeNo: 'Y-21', weight: 15, rate: 440 }
         ];
 
         let laborItems = [
@@ -630,7 +630,7 @@
         ];
 
         let importAccessories = [
-            { name: 'STICKER SHEETS', currency: 'RMB', rate: 1.50, damagePct: 5 }
+            { name: 'STICKER SHEETS', weight: 10, rate: 1200, damagePct: 5 }
         ];
 
         let toyAccessories = [
@@ -774,23 +774,17 @@
         function renderImportAccessories() {
             const tbody = document.getElementById('importAccessoriesTable');
             const batchPcs = parseFloat(document.getElementById('batchPieces').value) || 1;
-            const rmbVal = parseFloat(document.getElementById('rmbRate').value) || 39;
             tbody.innerHTML = '';
             importAccessories.forEach((acc, index) => {
                 const tr = document.createElement('tr');
-                const baseUnitPkr = acc.currency === 'RMB' ? (acc.rate || 0) * rmbVal : (acc.rate || 0);
+                const unitCostPkr = ((acc.weight || 0) / 1000) * (acc.rate || 0);
                 const damageMultiplier = 1 + ((acc.damagePct || 0) / 100);
-                const effectiveUnitPkr = baseUnitPkr * damageMultiplier;
+                const effectiveUnitPkr = unitCostPkr * damageMultiplier;
                 const batchTotal = effectiveUnitPkr * batchPcs;
 
                 tr.innerHTML = `
                     <td><input type="text" value="${acc.name}" oninput="updateImportAcc(${index}, 'name', this.value)"></td>
-                    <td>
-                        <select onchange="updateImportAcc(${index}, 'currency', this.value)">
-                            <option value="RMB" ${acc.currency === 'RMB' ? 'selected' : ''}>RMB</option>
-                            <option value="PKR" ${acc.currency === 'PKR' ? 'selected' : ''}>PKR</option>
-                        </select>
-                    </td>
+                    <td><input type="number" value="${acc.weight || 0}" step="0.1" oninput="updateImportAcc(${index}, 'weight', this.value)"></td>
                     <td><input type="number" value="${acc.rate || 0}" step="0.1" oninput="updateImportAcc(${index}, 'rate', this.value)"></td>
                     <td><input type="number" value="${acc.damagePct || 0}" step="0.5" placeholder="%" oninput="updateImportAcc(${index}, 'damagePct', this.value)"></td>
                     <td style="font-weight: 600;" id="importAccCost_${index}">RS. ${batchTotal.toLocaleString('en-PK', {maximumFractionDigits: 2})}</td>
@@ -801,13 +795,12 @@
             calculate();
         }
 
-        function addImportAccessoryRow() { importAccessories.push({ name: '', currency: 'RMB', rate: 0, damagePct: 0 }); renderImportAccessories(); }
+        function addImportAccessoryRow() { importAccessories.push({ name: '', weight: 0, rate: 0, damagePct: 0 }); renderImportAccessories(); }
         function removeImportAccessoryRow(index) { importAccessories.splice(index, 1); renderImportAccessories(); }
         function updateImportAcc(index, field, value) {
-            if (field === 'currency' || field === 'name') {
+            if (field === 'name') {
                 importAccessories[index][field] = value;
-                if(field === 'currency') renderImportAccessories();
-                else calculate();
+                calculate();
             } else {
                 importAccessories[index][field] = parseFloat(value) || 0;
                 calculate();
@@ -860,20 +853,20 @@
 
             document.getElementById('batchTitle').innerText = `TOTAL REQUIREMENTS FOR BATCH (${batchPcs.toLocaleString()} PCS)`;
 
-            let totalPpCost = 0, totalWeight = 0;
+            let totalPpCost = 0, totalWeightPerPc = 0;
             const granuleBreakdown = document.getElementById('granulesBreakdownList');
             granuleBreakdown.innerHTML = '';
             granules.forEach((g, index) => {
                 const unitCost = ((g.weight || 0) / 1000) * (g.rate || 0);
                 const batchCost = unitCost * batchPcs;
                 totalPpCost += unitCost;
-                totalWeight += (g.weight || 0);
+                totalWeightPerPc += (g.weight || 0);
 
                 const rowEl = document.getElementById(`granuleCost_${index}`);
                 if(rowEl) rowEl.innerText = `RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 2})}`;
 
                 if (g.part) {
-                    granuleBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${g.part}</b> (${g.weight}G @ RS.${g.rate}/KG)</span><span>RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
+                    granuleBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${g.part}</b> (${g.weight}G/pc @ RS.${g.rate}/KG)</span><span>RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
                 }
             });
 
@@ -929,9 +922,9 @@
             const importAccBreakdown = document.getElementById('importAccBreakdownList');
             importAccBreakdown.innerHTML = '';
             importAccessories.forEach((acc, index) => {
-                const baseUnitPkr = acc.currency === 'RMB' ? (acc.rate || 0) * rmbRate : (acc.rate || 0);
+                const unitCostPkr = ((acc.weight || 0) / 1000) * (acc.rate || 0);
                 const damageMultiplier = 1 + ((acc.damagePct || 0) / 100);
-                const effectiveUnitPkr = baseUnitPkr * damageMultiplier;
+                const effectiveUnitPkr = unitCostPkr * damageMultiplier;
                 const batchCost = effectiveUnitPkr * batchPcs;
                 totalImportAccCost += effectiveUnitPkr;
 
@@ -939,8 +932,8 @@
                 if(rowEl) rowEl.innerText = `RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 2})}`;
 
                 if (acc.name) {
-                    const requiredQty = Math.round(batchPcs * damageMultiplier);
-                    importAccBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${acc.name}</b> (${acc.currency}, ${acc.damagePct || 0}% Damaged Buffer $\rightarrow$ ${requiredQty.toLocaleString()} Pcs Req)</span><span>RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
+                    const requiredTotalKg = (((acc.weight || 0) * batchPcs) / 1000) * damageMultiplier;
+                    importAccBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${acc.name}</b> (${acc.weight}G/pc @ RS.${acc.rate}/KG, ${acc.damagePct || 0}% Damaged $\rightarrow$ ${requiredTotalKg.toFixed(2)} KG Req)</span><span>RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
                 }
             });
 
@@ -998,13 +991,13 @@
             });
 
             importAccessories.forEach(acc => {
-                const baseUnitPkr = acc.currency === 'RMB' ? (acc.rate || 0) * rmbRate : (acc.rate || 0);
+                const unitCostPkr = ((acc.weight || 0) / 1000) * (acc.rate || 0);
                 const damageMultiplier = 1 + ((acc.damagePct || 0) / 100);
-                const effectiveUnitPkr = baseUnitPkr * damageMultiplier;
+                const effectiveUnitPkr = unitCostPkr * damageMultiplier;
                 const itemBatchTotal = effectiveUnitPkr * batchPcs;
-                const reqQty = Math.round(batchPcs * damageMultiplier);
+                const totalKgReq = (((acc.weight || 0) * batchPcs) / 1000) * damageMultiplier;
                 if(acc.name) {
-                    batchBreakdown.innerHTML += `<div class="breakdown-item"><span>💍 <b>IMPORT ACC (${acc.name}):</b> ${reqQty.toLocaleString()} Pcs (${acc.damagePct || 0}% Damaged Buffer)</span><span>RS. ${itemBatchTotal.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
+                    batchBreakdown.innerHTML += `<div class="breakdown-item"><span>💍 <b>IMPORT ACC (${acc.name}):</b> ${totalKgReq.toFixed(2)} KG (${acc.damagePct || 0}% Damaged Buffer)</span><span>RS. ${itemBatchTotal.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
                 }
             });
 
@@ -1022,7 +1015,7 @@
             const totalBatchCapital = totalCost * batchPcs;
             batchBreakdown.innerHTML += `<div class="breakdown-item" style="font-weight: bold; border-top: 2px solid var(--secondary); margin-top: 6px; padding-top: 6px;"><span>💰 TOTAL BATCH INVESTMENT (${batchPcs.toLocaleString()} PCS):</span><span>RS. ${totalBatchCapital.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
 
-            document.getElementById('ppSubtotal').innerText = `PP GRANULES TOTAL: RS. ${totalPpCost.toFixed(2)} (${totalWeight}G)`;
+            document.getElementById('ppSubtotal').innerText = `PP GRANULES TOTAL: RS. ${totalPpCost.toFixed(2)} (${totalWeightPerPc}G / PC)`;
             document.getElementById('laborSubtotal').innerText = `LABOR TOTAL: RS. ${totalLaborCost.toFixed(2)}`;
             document.getElementById('overheadSubtotal').innerText = `OVERHEAD TOTAL: RS. ${totalOverheadCost.toFixed(2)} / UNIT`;
             document.getElementById('mouldingSubtotal').innerText = `MOULDING COST TOTAL: RS. ${totalMouldingCost.toFixed(2)}`;
