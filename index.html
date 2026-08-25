@@ -61,6 +61,14 @@
             font-size: 14px;
         }
 
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
         .main-layout {
             display: grid;
             grid-template-columns: 1fr;
@@ -323,72 +331,88 @@
             z-index: 1000;
         }
 
+        /* Comprehensive Full PDF Report Container (Hidden in normal UI, visible during PDF report print) */
+        #comprehensivePdfReport {
+            display: none;
+        }
+
         @media print {
             body {
                 background-color: #ffffff;
                 padding: 0;
                 max-width: 100%;
-                font-size: 10px;
+                font-size: 11px;
             }
-            .no-print, header, .main-layout > div:first-child, .summary-card .card-title, .btn {
+            .no-print, header, .main-layout {
                 display: none !important;
             }
-            .summary-card {
-                position: static;
-                border: none;
-                box-shadow: none;
-                background: #ffffff;
-                padding: 0;
+            #comprehensivePdfReport {
+                display: block !important;
+                width: 100%;
             }
-            .print-toy-header {
-                display: block;
+            .pdf-page-header {
                 text-align: center;
-                font-size: 18px;
+                border-bottom: 2px solid var(--primary);
+                padding-bottom: 10px;
+                margin-bottom: 15px;
+            }
+            .pdf-page-header h2 {
+                color: var(--primary);
+                font-size: 20px;
+                margin-bottom: 4px;
+            }
+            .pdf-section-title {
+                font-size: 13px;
                 font-weight: bold;
                 color: var(--primary);
+                background: #f1f5f9;
+                padding: 6px 8px;
+                margin-top: 15px;
                 margin-bottom: 8px;
-                padding-bottom: 4px;
-                border-bottom: 2px solid var(--primary);
+                border-left: 4px solid var(--primary);
+                border-top: 1px solid var(--border);
+                border-bottom: 1px solid var(--border);
             }
-            .report-img-container {
-                display: block;
-                text-align: center;
-                margin-bottom: 8px;
-            }
-            .report-img-container img {
-                max-height: 100px;
-                max-width: 100%;
-                object-fit: contain;
-                border: 1px solid var(--border);
-                border-radius: 4px;
-                padding: 2px;
-            }
-            .summary-row {
-                padding: 2px 0;
+            .pdf-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 10px;
                 font-size: 10px;
             }
-            .summary-row.total {
-                font-size: 11px;
-                margin-top: 3px;
-                padding-top: 4px;
+            .pdf-table th, .pdf-table td {
+                border: 1px solid var(--border);
+                padding: 5px 6px;
+                text-align: left;
             }
-            .summary-row.selling {
-                font-size: 12px;
-                padding: 4px;
-                margin-top: 3px;
+            .pdf-table th {
+                background-color: #f8fafc;
+                color: var(--primary);
+                font-weight: bold;
             }
-            .breakdown-box {
-                display: block !important;
+            .pdf-summary-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                margin-top: 15px;
+            }
+            .pdf-box {
+                border: 1px solid var(--border);
+                padding: 10px;
+                border-radius: 6px;
+                background: #f8fafc;
+            }
+            .pdf-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 4px 0;
+                border-bottom: 1px dotted var(--border-light);
+            }
+            .pdf-row.highlight {
+                font-weight: bold;
+                color: var(--primary);
+                border-top: 1px solid var(--border);
                 margin-top: 4px;
-                padding: 4px;
-            }
-            .breakdown-box h4 {
-                font-size: 11px;
-                margin-bottom: 2px;
-            }
-            .breakdown-item {
-                padding: 1px 0;
-                font-size: 9px;
+                padding-top: 6px;
             }
         }
     </style>
@@ -399,10 +423,95 @@
     <h1>TOY MANUFACTURING COSTING &amp; MATERIAL REQUIREMENTS SOFTWARE</h1>
     <p>BATCH QUANTITY PLANNING, GRANULES, SHADE CONTROL, CONTRACTOR LABOR, OVERHEADS &amp; CHINA IMPORT LANDED COST SYSTEM</p>
    </div>
-   <div class="no-print" style="margin-left: 15px;">
-    <button class="btn btn-danger" onclick="resetSoftware()" style="padding: 10px 16px; font-weight: bold;">🗑️ RESET ALL</button>
+   <div class="no-print header-actions">
+    <button class="btn btn-secondary" onclick="saveDataLocally()">💾 SAVE</button>
+    <button class="btn btn-primary" onclick="exportJsonFile()">📤 EXPORT JSON</button>
+    <button class="btn btn-primary" onclick="document.getElementById('importFile').click()">📥 IMPORT JSON</button>
+    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importJsonFile(event)">
+    <button class="btn btn-primary" style="background-color: #0f766e;" onclick="generatePdfReport()">📄 EXPORT PDF REPORT</button>
+    <button class="btn btn-danger" onclick="resetSoftware()">🗑️ RESET</button>
    </div>
   </header>
+
+  <!-- COMPREHENSIVE PDF REPORT PRINT TEMPLATE (Populated dynamically) -->
+  <div id="comprehensivePdfReport">
+     <div class="pdf-page-header">
+        <h2 id="pdfReportTitle">TOY MANUFACTURING &amp; COSTING COMPREHENSIVE REPORT</h2>
+        <p id="pdfReportMeta" style="font-size: 12px; color: var(--text-muted);">DATE: -- | BATCH SIZE: -- PCS</p>
+     </div>
+     
+     <div style="display: flex; gap: 15px; margin-bottom: 15px; align-items: center;" id="pdfTopInfoBox">
+        <div id="pdfImageContainer" style="width: 120px; height: 120px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; background: #fafafa;">
+            <span style="font-size: 9px; color: var(--text-muted);">[NO IMAGE]</span>
+        </div>
+        <div style="flex: 1; font-size: 12px;">
+            <div style="margin-bottom: 4px;"><b>TOY NAME / ITEM CODE:</b> <span id="pdfValToyName">-</span></div>
+            <div style="margin-bottom: 4px;"><b>PRODUCTION BATCH SIZE:</b> <span id="pdfValBatchPieces">-</span></div>
+            <div style="margin-bottom: 4px;"><b>PRODUCTION DATE:</b> <span id="pdfValBatchDate">-</span></div>
+            <div style="margin-bottom: 4px;"><b>RMB EXCHANGE RATE:</b> <span id="pdfValRmbRate">-</span> PKR</div>
+            <div style="margin-bottom: 4px;"><b>PACKING COST / PC:</b> RS. <span id="pdfValPacking">-</span></div>
+            <div><b>PROFIT MARGIN:</b> <span id="pdfValMargin">-</span>%</div>
+        </div>
+     </div>
+
+     <div class="pdf-section-title">1. RAW MATERIAL GRID (PP GRANULES &amp; PARTS)</div>
+     <table class="pdf-table" id="pdfTableGranules">
+        <thead><tr><th>Part / Component</th><th>Grade</th><th>Colour &amp; Shade</th><th>1-PC Wt (g)</th><th>Rate (Rs./kg)</th><th>Wastage (Pcs)</th><th>Total Batch Cost (Rs.)</th></tr></thead>
+        <tbody></tbody>
+     </table>
+
+     <div class="pdf-section-title">2. CONTRACTOR &amp; FITTING LABOR GRID</div>
+     <table class="pdf-table" id="pdfTableLabor">
+        <thead><tr><th>Assembly / Job Name</th><th>Rate / PC (Rs.)</th><th>Wastage / Extra (Pcs)</th><th>Total Batch Cost (Rs.)</th></tr></thead>
+        <tbody></tbody>
+     </table>
+
+     <div class="pdf-section-title">3. RENT &amp; FACTORY OVERHEADS GRID</div>
+     <table class="pdf-table" id="pdfTableOverheads">
+        <thead><tr><th>Expense Name</th><th>Rate Per Piece (Rs.)</th><th>Total Batch Cost (Rs.)</th></tr></thead>
+        <tbody></tbody>
+     </table>
+
+     <div class="pdf-section-title">4. MOULDING / MACHINE TIME COST GRID</div>
+     <table class="pdf-table" id="pdfTableMoulding">
+        <thead><tr><th>Part / Component</th><th>Machine Tonnage</th><th>Rate / PC (Rs.)</th><th>Wastage (Pcs)</th><th>Total Batch Cost (Rs.)</th></tr></thead>
+        <tbody></tbody>
+     </table>
+
+     <div class="pdf-section-title">5. CHINA IMPORT ACCESSORIES &amp; LANDED COST GRID</div>
+     <table class="pdf-table" id="pdfTableImports">
+        <thead><tr><th>Item Name</th><th>Rate (RMB)</th><th>Wt (g)/pc</th><th>Freight Rate (Rs./kg)</th><th>Landed Cost/pc (Rs.)</th></tr></thead>
+        <tbody></tbody>
+     </table>
+
+     <div class="pdf-section-title">6. ACCESSORIES USED IN MAKING TOY</div>
+     <table class="pdf-table" id="pdfTableToyAcc">
+        <thead><tr><th>Item Name</th><th>Rate (Rs.)</th><th>Wt (g)/pc</th><th>Calculation Type</th><th>Qty/Pcs</th><th>Damaged</th><th>Total Batch Cost (Rs.)</th></tr></thead>
+        <tbody></tbody>
+     </table>
+
+     <div class="pdf-section-title">7. FINANCIAL COST SUMMARY &amp; BATCH REQUIREMENTS</div>
+     <div class="pdf-summary-grid">
+        <div class="pdf-box">
+            <div style="font-weight: bold; color: var(--primary); margin-bottom: 6px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">COST PER UNIT (BREAKDOWN)</div>
+            <div class="pdf-row"><span>PP Granules Total:</span><span id="pdfSumPP">Rs. 0.00</span></div>
+            <div class="pdf-row"><span>Contractor Labor:</span><span id="pdfSumLabor">Rs. 0.00</span></div>
+            <div class="pdf-row"><span>Rent &amp; Overheads:</span><span id="pdfSumOverhead">Rs. 0.00</span></div>
+            <div class="pdf-row"><span>Moulding Cost:</span><span id="pdfSumMoulding">Rs. 0.00</span></div>
+            <div class="pdf-row"><span>Toy Accessories:</span><span id="pdfSumToyAcc">Rs. 0.00</span></div>
+            <div class="pdf-row"><span>Packing Cost:</span><span id="pdfSumPacking">Rs. 0.00</span></div>
+            <div class="pdf-row highlight"><span>Total Cost / Unit:</span><span id="pdfSumTotalCost">Rs. 0.00</span></div>
+            <div class="pdf-row"><span>Profit Margin Amount:</span><span id="pdfSumProfit">Rs. 0.00</span></div>
+            <div class="pdf-row highlight" style="color: var(--secondary);"><span>Wholesale Selling Price:</span><span id="pdfSumSelling">Rs. 0.00</span></div>
+        </div>
+        <div class="pdf-box">
+            <div style="font-weight: bold; color: var(--primary); margin-bottom: 6px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">WASTAGE &amp; TOTAL BATCH CAPITAL</div>
+            <div id="pdfWastageSummaryList"></div>
+            <div class="pdf-row highlight" style="margin-top: 10px;"><span>Total Batch Investment:</span><span id="pdfSumTotalBatchCap">Rs. 0.00</span></div>
+        </div>
+     </div>
+  </div>
+
   <div class="main-layout">
    <div>
     <div class="card">
@@ -435,7 +544,7 @@
     </div>
     <div class="card">
      <div class="card-title">
-      <span>2. RAW MATERIAL GRID (PP GRANULES &amp; PARTS) - <small style="font-size:11px; color:var(--text-muted);">Enter weight in grams per single piece + wastage %</small></span>
+      <span>2. RAW MATERIAL GRID (PP GRANULES &amp; PARTS) - <small style="font-size:11px; color:var(--text-muted);">Enter weight in grams per single piece + wastage pieces</small></span>
       <button class="btn btn-secondary" onclick="addGranuleRow()">+ ADD ROW</button>
      </div>
      <div class="grid-container">
@@ -447,7 +556,7 @@
          <th style="width: 15%;">COLOUR &amp; SHADE</th>
          <th style="width: 11%;">1-PC WT (G)</th>
          <th style="width: 12%;">RATE (RS./KG)</th>
-         <th style="width: 11%;">WASTAGE %</th>
+         <th style="width: 11%;">WASTAGE (PCS)</th>
          <th style="width: 13%;">TOTAL BATCH COST (RS.)</th>
          <th style="width: 5%; text-align: center;">ACTION</th>
         </tr>
@@ -504,13 +613,15 @@
       <button class="btn btn-secondary" onclick="addMouldingRow()">+ ADD MOULDING ROW</button>
      </div>
      <div class="grid-container">
-      <table class="fixed-grid" style="min-width: 750px;">
+      <table class="fixed-grid" style="min-width: 950px;">
        <thead>
         <tr>
-         <th style="width: 28%;">PART / COMPONENT</th>
-         <th style="width: 26%;">MACHINE TONNAGE</th>
-         <th style="width: 26%;">TOTAL BATCH COST (RS.)</th>
-         <th style="width: 10%; text-align: center;">ACTION</th>
+         <th style="width: 25%;">PART / COMPONENT</th>
+         <th style="width: 20%;">MACHINE TONNAGE</th>
+         <th style="width: 15%;">RATE / PC (RS.)</th>
+         <th style="width: 15%;">WASTAGE (PCS)</th>
+         <th style="width: 20%;">TOTAL BATCH COST (RS.)</th>
+         <th style="width: 5%; text-align: center;">ACTION</th>
         </tr>
        </thead>
        <tbody id="mouldingTable"></tbody>
@@ -542,22 +653,21 @@
     </div>
     <div class="card">
      <div class="card-title">
-      <span>7. ACCESSORIES USED IN MAKING TOY (AUTO-FETCH CHINA ITEMS + LOCAL MANUAL ENTRIES)</span>
+      <span>7. ACCESSORIES USED IN MAKING TOY (AUTO-FETCH CHINA ITEMS + LOCAL MANUAL ENTRIES WITH GRAMS)</span>
       <button class="btn btn-secondary" onclick="addToyAccessoryRow()">+ ADD LOCAL ACCESSORY</button>
      </div>
-     <div style="font-size: 11px; color: var(--secondary); margin-bottom: 8px; font-weight: 600;">
-      💡 TIP: USE "PER PIECE RATE (MULTIPLIER)" FOR WHEELS/PARTS (>1) AND "CARTON / PACK PROPORTIONATE" FOR BULK CARTONS!
-     </div>
+     <div style="font-size: 11px; color: var(--secondary); margin-bottom: 8px; font-weight: 600;">💡 TIP: ENTER RATE &amp; WEIGHT IN GRAMS FOR LOCAL ITEMS, OR USE MULTIPLIER / CARTON PROPORTIONS!</div>
      <div class="grid-container">
-      <table class="fixed-grid" style="min-width: 1050px;">
+      <table class="fixed-grid" style="min-width: 1150px;">
        <thead>
         <tr>
-         <th style="width: 22%;">ITEM NAME</th>
-         <th style="width: 13%;">RATE (RS.)</th>
-         <th style="width: 22%;">CALCULATION TYPE</th>
-         <th style="width: 10%;">QTY / PCS</th>
-         <th style="width: 11%;">DAMAGED</th>
-         <th style="width: 17%;">TOTAL BATCH COST (RS.)</th>
+         <th style="width: 20%;">ITEM NAME</th>
+         <th style="width: 12%;">RATE (RS.)</th>
+         <th style="width: 11%;">WT (G) / PC</th>
+         <th style="width: 20%;">CALCULATION TYPE</th>
+         <th style="width: 9%;">QTY / PCS</th>
+         <th style="width: 10%;">DAMAGED</th>
+         <th style="width: 13%;">TOTAL BATCH COST (RS.)</th>
          <th style="width: 5%; text-align: center;">ACTION</th>
         </tr>
        </thead>
@@ -581,7 +691,7 @@
    </div>
    <div>
     <div class="card summary-card">
-     <div class="print-toy-header" id="printToyHeader">TOY NAME: </div>
+     <div class="print-toy-header" id="printToyHeader">TOY NAME:</div>
      <div id="printDateHeader" style="display:none; text-align:center; font-size:12px; color:var(--text-muted); margin-bottom:8px;"></div>
      <div class="card-title">COST SUMMARY (PER PIECE)</div>
      <div class="report-img-container" id="reportImgContainer">
@@ -667,6 +777,8 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('batchDate').value = today;
             
+            loadDataLocally();
+
             document.addEventListener('focus', function(e) {
                 if (e.target.tagName === 'INPUT' && (e.target.type === 'text' || e.target.type === 'number')) {
                     setTimeout(() => e.target.select(), 50);
@@ -685,7 +797,231 @@
             });
         });
 
+        function saveDataLocally() {
+            const state = getAppState();
+            localStorage.setItem('toyCostingAppState', JSON.stringify(state));
+            showToast("DATA SAVED SUCCESSFULLY!");
+        }
+
+        function loadDataLocally() {
+            const saved = localStorage.getItem('toyCostingAppState');
+            if (saved) {
+                try {
+                    const state = JSON.parse(saved);
+                    setAppState(state);
+                    calculate();
+                } catch(e) {
+                    console.error("Failed to load saved state", e);
+                }
+            }
+        }
+
+        function exportJsonFile() {
+            const state = getAppState();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `toy_costing_${document.getElementById('toyName').value || 'project'}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast("JSON FILE EXPORTED SUCCESSFULLY!");
+        }
+
+        function importJsonFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const state = JSON.parse(e.target.result);
+                    setAppState(state);
+                    calculate();
+                    showToast("JSON FILE IMPORTED SUCCESSFULLY!");
+                } catch(err) {
+                    alert("Invalid JSON file format!");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function generatePdfReport() {
+            calculate();
+            
+            // Populate Comprehensive PDF Report Fields
+            const toyNameVal = document.getElementById('toyName').value || 'UNTITLED TOY';
+            const batchPcsVal = document.getElementById('batchPieces').value || '0';
+            const batchDateVal = document.getElementById('batchDate').value || '-';
+            const rmbRateVal = document.getElementById('rmbRate').value || '0';
+            const packingVal = document.getElementById('packingCost').value || '0';
+            const marginVal = document.getElementById('profitMargin').value || '0';
+
+            document.getElementById('pdfReportTitle').innerText = `TOY MANUFACTURING REPORT: ${toyNameVal}`;
+            document.getElementById('pdfReportMeta').innerText = `DATE: ${batchDateVal} | BATCH SIZE: ${Number(batchPcsVal).toLocaleString()} PCS`;
+            
+            document.getElementById('pdfValToyName').innerText = toyNameVal;
+            document.getElementById('pdfValBatchPieces').innerText = Number(batchPcsVal).toLocaleString();
+            document.getElementById('pdfValBatchDate').innerText = batchDateVal;
+            document.getElementById('pdfValRmbRate').innerText = rmbRateVal;
+            document.getElementById('pdfValPacking').innerText = Number(packingVal).toFixed(2);
+            document.getElementById('pdfValMargin').innerText = marginVal;
+
+            const pdfImgContainer = document.getElementById('pdfImageContainer');
+            if (currentImageData) {
+                pdfImgContainer.innerHTML = `<img src="${currentImageData}" style="max-width:100%; max-height:100%; object-fit:contain;" alt="TOY">`;
+            } else {
+                pdfImgContainer.innerHTML = `<span style="font-size: 9px; color: var(--text-muted);">[NO IMAGE]</span>`;
+            }
+
+            // Populate Granules Table
+            const pdfGranBody = document.querySelector('#pdfTableGranules tbody');
+            pdfGranBody.innerHTML = '';
+            granules.forEach(g => {
+                const wt = g.weight || 0;
+                const rate = g.rate || 0;
+                const wastage = g.wastagePcs || 0;
+                const batchTotal = (((wt * (parseFloat(batchPcsVal) || 1 + wastage)) / 1000) * rate);
+                pdfGranBody.innerHTML += `<tr><td>${g.part || '-'}</td><td>${g.grade || '-'}</td><td>${g.colour || ''} ${g.shadeNo ? '('+g.shadeNo+')' : ''}</td><td>${wt}</td><td>${rate}</td><td>${wastage}</td><td>Rs. ${batchTotal.toLocaleString('en-PK', {maximumFractionDigits: 2})}</td></tr>`;
+            });
+            if(granules.length === 0) pdfGranBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">No granules added</td></tr>`;
+
+            // Populate Labor Table
+            const pdfLaborBody = document.querySelector('#pdfTableLabor tbody');
+            pdfLaborBody.innerHTML = '';
+            laborItems.forEach(l => {
+                const rate = l.rate || 0;
+                const damaged = l.damagedPcs || 0;
+                const total = (rate * (parseFloat(batchPcsVal) || 1)) + (damaged * rate);
+                pdfLaborBody.innerHTML += `<tr><td>${l.job || '-'}</td><td>${rate}</td><td>${damaged}</td><td>Rs. ${total.toLocaleString('en-PK', {maximumFractionDigits: 2})}</td></tr>`;
+            });
+            if(laborItems.length === 0) pdfLaborBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No labor items added</td></tr>`;
+
+            // Populate Overheads Table
+            const pdfOverheadBody = document.querySelector('#pdfTableOverheads tbody');
+            pdfOverheadBody.innerHTML = '';
+            overheadItems.forEach(o => {
+                const rate = o.rate || 0;
+                const total = rate * (parseFloat(batchPcsVal) || 1);
+                pdfOverheadBody.innerHTML += `<tr><td>${o.name || '-'}</td><td>${rate}</td><td>Rs. ${total.toLocaleString('en-PK', {maximumFractionDigits: 2})}</td></tr>`;
+            });
+            if(overheadItems.length === 0) pdfOverheadBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No overhead expenses added</td></tr>`;
+
+            // Populate Moulding Table
+            const pdfMouldingBody = document.querySelector('#pdfTableMoulding tbody');
+            pdfMouldingBody.innerHTML = '';
+            mouldingItems.forEach(m => {
+                const rate = m.rate || 0;
+                const wastage = m.wastagePcs || 0;
+                const total = ((rate * (parseFloat(batchPcsVal) || 1)) + (wastage * rate));
+                pdfMouldingBody.innerHTML += `<tr><td>${m.part || '-'}</td><td>${m.machine || '-'}</td><td>${rate}</td><td>${wastage}</td><td>Rs. ${total.toLocaleString('en-PK', {maximumFractionDigits: 2})}</td></tr>`;
+            });
+            if(mouldingItems.length === 0) pdfMouldingBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No moulding items added</td></tr>`;
+
+            // Populate China Imports Table
+            const pdfImportsBody = document.querySelector('#pdfTableImports tbody');
+            pdfImportsBody.innerHTML = '';
+            importAccessories.forEach(acc => {
+                const rmb = acc.rmbRate || 0;
+                const wt = acc.weight || 0;
+                const freight = acc.freightRateKg || 0;
+                const landed = (rmb * (parseFloat(rmbRateVal) || 0)) + ((wt / 1000) * freight);
+                pdfImportsBody.innerHTML += `<tr><td>${acc.name || '-'}</td><td>${rmb} RMB</td><td>${wt}g</td><td>${freight}</td><td>Rs. ${landed.toFixed(4)}</td></tr>`;
+            });
+            if(importAccessories.length === 0) pdfImportsBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No China import items added</td></tr>`;
+
+            // Populate Toy Accessories Table
+            const pdfToyAccBody = document.querySelector('#pdfTableToyAcc tbody');
+            pdfToyAccBody.innerHTML = '';
+            toyAccessories.forEach(acc => {
+                const rate = acc.rate || 0;
+                const wt = acc.weight || 0;
+                const calc = acc.calcType || 'per_pc_multiplier';
+                const qty = acc.qtyPerPc || 0;
+                const damaged = acc.damagedPcs || 0;
+                const bp = parseFloat(batchPcsVal) || 1;
+                let net = calc === 'per_pc_multiplier' ? (rate * bp * qty) + (damaged * rate) : ((rate / (qty > 0 ? qty : 1)) * bp) + (damaged * rate);
+                pdfToyAccBody.innerHTML += `<tr><td>${acc.name || '-'}</td><td>${rate.toFixed(2)}</td><td>${wt}g</td><td>${calc}</td><td>${qty}</td><td>${damaged}</td><td>Rs. ${net.toLocaleString('en-PK', {maximumFractionDigits: 2})}</td></tr>`;
+            });
+            if(toyAccessories.length === 0) pdfToyAccBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">No accessories added</td></tr>`;
+
+            // Copy Financial Summary Totals
+            document.getElementById('pdfSumPP').innerText = document.getElementById('sumPP').innerText;
+            document.getElementById('pdfSumLabor').innerText = document.getElementById('sumLabor').innerText;
+            document.getElementById('pdfSumOverhead').innerText = document.getElementById('sumOverhead').innerText;
+            document.getElementById('pdfSumMoulding').innerText = document.getElementById('sumMoulding').innerText;
+            document.getElementById('pdfSumToyAcc').innerText = document.getElementById('sumToyAcc').innerText;
+            document.getElementById('pdfSumPacking').innerText = 'Rs. ' + Number(packingVal).toFixed(2);
+            document.getElementById('pdfSumTotalCost').innerText = document.getElementById('sumTotalCost').innerText;
+            document.getElementById('pdfSumProfit').innerText = document.getElementById('sumProfit').innerText;
+            document.getElementById('pdfSumSelling').innerText = document.getElementById('sumSelling').innerText;
+            
+            // Copy Wastage & Batch Capital
+            const wastageHtml = document.getElementById('wastageBreakdownList').innerHTML;
+            document.getElementById('pdfWastageSummaryList').innerHTML = wastageHtml;
+            
+            // Extract total batch capital from last line of batch breakdown
+            const batchBreakdownLines = document.querySelectorAll('#batchBreakdownList .breakdown-item');
+            if(batchBreakdownLines.length > 0) {
+                const lastLine = batchBreakdownLines[batchBreakdownLines.length - 1];
+                document.getElementById('pdfSumTotalBatchCap').innerText = lastLine.querySelector('span:last-child').innerText;
+            }
+
+            // Trigger Print Preview dialog configured for PDF saving
+            window.print();
+        }
+
+        function getAppState() {
+            return {
+                toyName: document.getElementById('toyName').value,
+                batchPieces: document.getElementById('batchPieces').value,
+                batchDate: document.getElementById('batchDate').value,
+                rmbRate: document.getElementById('rmbRate').value,
+                packingCost: document.getElementById('packingCost').value,
+                profitMargin: document.getElementById('profitMargin').value,
+                currentImageData,
+                granules,
+                laborItems,
+                overheadItems,
+                mouldingItems,
+                importAccessories,
+                toyAccessories
+            };
+        }
+
+        function setAppState(state) {
+            document.getElementById('toyName').value = state.toyName || '';
+            document.getElementById('batchPieces').value = state.batchPieces || '';
+            document.getElementById('batchDate').value = state.batchDate || new Date().toISOString().split('T')[0];
+            document.getElementById('rmbRate').value = state.rmbRate || '';
+            document.getElementById('packingCost').value = state.packingCost || '';
+            document.getElementById('profitMargin').value = state.profitMargin || '';
+            
+            currentImageData = state.currentImageData || '';
+            if (currentImageData) {
+                document.getElementById('imgPreviewBox').innerHTML = `<img src="${currentImageData}" alt="TOY IMAGE">`;
+                document.getElementById('reportImgContainer').innerHTML = `<img src="${currentImageData}" alt="TOY REPORT IMAGE">`;
+            } else {
+                document.getElementById('imgPreviewBox').innerHTML = '<span style="color: var(--text-muted); font-size: 12px;">NO IMAGE SELECTED</span>';
+                document.getElementById('reportImgContainer').innerHTML = '<span style="color: var(--text-muted); font-size: 10px;">[NO IMAGE]</span>';
+            }
+
+            granules = state.granules || [];
+            laborItems = state.laborItems || [];
+            overheadItems = state.overheadItems || [];
+            mouldingItems = state.mouldingItems || [];
+            importAccessories = state.importAccessories || [];
+            toyAccessories = state.toyAccessories || [];
+
+            renderGranules();
+            renderLabor();
+            renderOverheads();
+            renderMoulding();
+            renderImportAccessories();
+            renderToyAccessories();
+        }
+
         function resetSoftware() {
+            if(!confirm("Are you sure you want to reset all data?")) return;
             document.getElementById('toyName').value = '';
             document.getElementById('batchPieces').value = '';
             const today = new Date().toISOString().split('T')[0];
@@ -713,6 +1049,7 @@
             renderImportAccessories();
             renderToyAccessories();
             
+            localStorage.removeItem('toyCostingAppState');
             showToast("SOFTWARE RESET SUCCESSFULLY!");
         }
 
@@ -755,7 +1092,7 @@
                     </td>
                     <td><input type="number" value="${g.weight || ''}" oninput="updateGranule(${index}, 'weight', this.value)"></td>
                     <td><input type="number" value="${g.rate || ''}" oninput="updateGranule(${index}, 'rate', this.value)"></td>
-                    <td><input type="number" value="${g.wastagePct || ''}" step="0.5" oninput="updateGranule(${index}, 'wastagePct', this.value)"></td>
+                    <td><input type="number" value="${g.wastagePcs || ''}" step="1" oninput="updateGranule(${index}, 'wastagePcs', this.value)"></td>
                     <td style="font-weight: 600;" id="granuleCost_${index}">RS. 0.00</td>
                     <td style="text-align: center;"><button class="btn btn-danger" onclick="removeGranuleRow(${index})">✕</button></td>
                 `;
@@ -764,10 +1101,10 @@
             calculate();
         }
 
-        function addGranuleRow() { granules.push({ part: '', grade: '', colour: '', shadeNo: '', weight: '', rate: '', wastagePct: '' }); renderGranules(); }
+        function addGranuleRow() { granules.push({ part: '', grade: '', colour: '', shadeNo: '', weight: '', rate: '', wastagePcs: '' }); renderGranules(); }
         function removeGranuleRow(index) { granules.splice(index, 1); renderGranules(); }
         function updateGranule(index, field, value) {
-            granules[index][field] = (field === 'weight' || field === 'rate' || field === 'wastagePct') ? (parseFloat(value) || 0) : value;
+            granules[index][field] = (field === 'weight' || field === 'rate' || field === 'wastagePcs') ? (parseFloat(value) || 0) : value;
             calculate();
         }
 
@@ -825,8 +1162,9 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><input type="text" value="${m.part}" oninput="updateMoulding(${index}, 'part', this.value)"></td>
-                    <td><input type="text" value="${m.machine || ''}" placeholder="ENTER TONNAGE (E.G. 90-TON)" oninput="updateMoulding(${index}, 'machine', this.value)"></td>
-                    <td><input type="number" value="${m.cost || ''}" step="0.5" oninput="updateMoulding(${index}, 'cost', this.value)"></td>
+                    <td><input type="text" value="${m.machine || ''}" placeholder="TONNAGE" oninput="updateMoulding(${index}, 'machine', this.value)"></td>
+                    <td><input type="number" value="${m.rate !== '' ? m.rate : ''}" step="0.05" oninput="updateMoulding(${index}, 'rate', this.value)"></td>
+                    <td><input type="number" value="${m.wastagePcs !== '' ? m.wastagePcs : ''}" step="1" oninput="updateMoulding(${index}, 'wastagePcs', this.value)"></td>
                     <td style="font-weight: 600;" id="mouldingCost_${index}">RS. 0.00</td>
                     <td style="text-align: center;"><button class="btn btn-danger" onclick="removeMouldingRow(${index})">✕</button></td>
                 `;
@@ -835,10 +1173,10 @@
             calculate();
         }
 
-        function addMouldingRow() { mouldingItems.push({ part: '', machine: '', cost: '' }); renderMoulding(); }
+        function addMouldingRow() { mouldingItems.push({ part: '', machine: '', rate: '', wastagePcs: '' }); renderMoulding(); }
         function removeMouldingRow(index) { mouldingItems.splice(index, 1); renderMoulding(); }
         function updateMoulding(index, field, value) {
-            mouldingItems[index][field] = (field === 'cost') ? (parseFloat(value) || 0) : value;
+            mouldingItems[index][field] = (field === 'part' || field === 'machine') ? value : (value === '' ? '' : (parseFloat(value) || 0));
             calculate();
         }
 
@@ -863,7 +1201,7 @@
         function addImportAccessoryRow() { 
             const newName = `IMPORT ITEM ${importAccessories.length + 1}`;
             importAccessories.push({ name: newName, rmbRate: '', weight: '', freightRateKg: '' }); 
-            toyAccessories.push({ name: newName, rate: '', calcType: 'per_pc_multiplier', qtyPerPc: '', damagedPcs: '', isChinaImport: true });
+            toyAccessories.push({ name: newName, rate: '', weight: '', calcType: 'per_pc_multiplier', qtyPerPc: '', damagedPcs: '', isChinaImport: true });
             renderImportAccessories(); 
             renderToyAccessories();
         }
@@ -880,6 +1218,16 @@
             const oldName = importAccessories[index].name;
             importAccessories[index][field] = (field === 'name') ? value : (value === '' ? '' : (parseFloat(value) || 0));
             
+            if (field === 'weight') {
+                const newWt = parseFloat(value) || 0;
+                toyAccessories.forEach(item => {
+                    if (item.isChinaImport && item.name === oldName) {
+                        item.weight = newWt;
+                    }
+                });
+                renderToyAccessories();
+            }
+
             if (field === 'name') {
                 toyAccessories.forEach(item => {
                     if (item.isChinaImport && item.name === oldName) {
@@ -900,7 +1248,8 @@
                     tr.style.backgroundColor = '#f8fafc';
                     tr.innerHTML = `
                         <td><input type="text" value="${acc.name}" readonly style="background:#e2e8f0; font-weight:600;" title="Synced from China Import Grid"></td>
-                        <td><input type="number" id="toyAccRate_${index}" value="${acc.rate !== '' ? acc.rate.toFixed(4) : ''}" step="0.0001" oninput="updateToyAcc(${index}, 'rate', this.value)" style="font-weight:600;" title="Auto-fetched Landed Cost or Editable Per-Piece Rate"></td>
+                        <td><input type="number" id="toyAccRate_${index}" value="${acc.rate !== '' ? acc.rate.toFixed(4) : ''}" step="0.0001" oninput="updateToyAcc(${index}, 'rate', this.value)" style="font-weight:600;" title="Auto-fetched Landed Cost"></td>
+                        <td><input type="number" id="toyAccWt_${index}" value="${acc.weight !== '' ? acc.weight : ''}" readonly style="background:#e2e8f0; font-weight:600;" title="Synced Weight from China Grid"></td>
                         <td>
                             <select onchange="updateToyAcc(${index}, 'calcType', this.value)">
                                 <option value="per_pc_multiplier" ${acc.calcType === 'per_pc_multiplier' ? 'selected' : ''}>PER PIECE RATE (MULTIPLIER)</option>
@@ -916,6 +1265,7 @@
                     tr.innerHTML = `
                         <td><input type="text" value="${acc.name}" oninput="updateToyAcc(${index}, 'name', this.value)"></td>
                         <td><input type="number" value="${acc.rate !== '' ? acc.rate : ''}" step="0.0001" oninput="updateToyAcc(${index}, 'rate', this.value)"></td>
+                        <td><input type="number" value="${acc.weight !== '' ? acc.weight : ''}" step="0.1" oninput="updateToyAcc(${index}, 'weight', this.value)" title="Weight in grams"></td>
                         <td>
                             <select onchange="updateToyAcc(${index}, 'calcType', this.value)">
                                 <option value="per_pc_multiplier" ${acc.calcType === 'per_pc_multiplier' ? 'selected' : ''}>PER PIECE RATE (MULTIPLIER)</option>
@@ -934,7 +1284,7 @@
         }
 
         function addToyAccessoryRow() { 
-            toyAccessories.push({ name: '', rate: '', calcType: 'per_pc_multiplier', qtyPerPc: '', damagedPcs: '', isChinaImport: false }); 
+            toyAccessories.push({ name: '', rate: '', weight: '', calcType: 'per_pc_multiplier', qtyPerPc: '', damagedPcs: '', isChinaImport: false }); 
             renderToyAccessories(); 
         }
 
@@ -975,24 +1325,27 @@
             granules.forEach((g, index) => {
                 const wt = g.weight || 0;
                 const rate = g.rate || 0;
-                const wastagePct = g.wastagePct || 0;
-                const wastageMultiplier = 1 + (wastagePct / 100);
-                const effectiveWt = wt * wastageMultiplier;
-                const unitCost = (effectiveWt / 1000) * rate;
-                const batchCost = unitCost * batchPcs;
+                const wastagePcs = g.wastagePcs || 0;
                 
-                const baseUnitCost = (wt / 1000) * rate;
-                const wastageUnitCost = unitCost - baseUnitCost;
-                totalGranulesWastageCostBulk += (wastageUnitCost * batchPcs);
+                const totalPiecesNeeded = batchPcs + wastagePcs;
+                const totalBatchWeightKg = (wt * totalPiecesNeeded) / 1000;
+                const totalBatchCost = totalBatchWeightKg * rate;
+                
+                const baseBatchWeightKg = (wt * batchPcs) / 1000;
+                const baseBatchCost = baseBatchWeightKg * rate;
+                const wastageBatchCost = totalBatchCost - baseBatchCost;
 
+                const unitCost = batchPcs > 0 ? (totalBatchCost / batchPcs) : 0;
+                
+                totalGranulesWastageCostBulk += wastageBatchCost;
                 totalPpCostPerPc += unitCost;
-                totalWeightPerPc += effectiveWt;
+                totalWeightPerPc += wt;
 
                 const rowEl = document.getElementById(`granuleCost_${index}`);
-                if(rowEl) rowEl.innerText = `RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 2})}`;
+                if(rowEl) rowEl.innerText = `RS. ${totalBatchCost.toLocaleString('en-PK', {maximumFractionDigits: 2})}`;
 
                 if (g.part) {
-                    granuleBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${g.part}</b> (${effectiveWt.toFixed(1)}G/pc incl. ${wastagePct}% waste)</span><span>RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
+                    granuleBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${g.part}</b> (${wt}G/pc + ${wastagePcs} pcs wastage)</span><span>RS. ${totalBatchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
                 }
             });
 
@@ -1038,21 +1391,29 @@
                 }
             });
 
-            // 4. MOULDING
-            let totalMouldingCostPerPc = 0;
+            // 5. MOULDING / MACHINE TIME COST
+            let totalMouldingCostPerPc = 0, totalMouldingWastageCostBulk = 0;
             const mouldingBreakdown = document.getElementById('mouldingBreakdownList');
             mouldingBreakdown.innerHTML = '';
             
             mouldingItems.forEach((m, index) => {
-                const unitCost = (m.cost || 0);
-                const batchCost = unitCost * batchPcs;
+                const ratePerPc = m.rate || 0;
+                const wastagePcs = m.wastagePcs || 0;
+                
+                const grossBatchCost = ratePerPc * batchPcs;
+                const wastageBatchCost = wastagePcs * ratePerPc;
+                const totalBatchCost = grossBatchCost + wastageBatchCost;
+
+                const unitCost = batchPcs > 0 ? (totalBatchCost / batchPcs) : 0;
+
+                totalMouldingWastageCostBulk += wastageBatchCost;
                 totalMouldingCostPerPc += unitCost;
 
                 const rowEl = document.getElementById(`mouldingCost_${index}`);
-                if(rowEl) rowEl.innerText = `RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 2})}`;
+                if(rowEl) rowEl.innerText = `RS. ${totalBatchCost.toLocaleString('en-PK', {maximumFractionDigits: 2})}`;
 
                 if (m.part) {
-                    mouldingBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${m.part}</b> (${m.machine || 'CUSTOM TONNAGE'})</span><span>RS. ${batchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
+                    mouldingBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${m.part}</b> (Rate: Rs.${ratePerPc}/pc, ${wastagePcs} wastage pcs)</span><span>RS. ${totalBatchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
                 }
             });
 
@@ -1072,6 +1433,7 @@
                 toyAccessories.forEach(toyAcc => {
                     if (toyAcc.isChinaImport && toyAcc.name === acc.name) {
                         toyAcc.rate = landedCostPerPc;
+                        toyAcc.weight = wtGrams;
                     }
                 });
 
@@ -1089,6 +1451,10 @@
                     if (rateInputEl && document.activeElement !== rateInputEl) {
                         rateInputEl.value = acc.rate !== '' ? acc.rate.toFixed(4) : '';
                     }
+                    const wtInputEl = document.getElementById(`toyAccWt_${index}`);
+                    if (wtInputEl && document.activeElement !== wtInputEl) {
+                        wtInputEl.value = acc.weight !== '' ? acc.weight : '';
+                    }
                 }
             });
 
@@ -1099,6 +1465,7 @@
             
             toyAccessories.forEach((acc, index) => {
                 const rate = acc.rate !== '' ? acc.rate : 0;
+                const wtGrams = acc.weight !== '' ? acc.weight : 0;
                 const calcType = acc.calcType || 'per_pc_multiplier';
                 const paramVal = acc.qtyPerPc !== '' ? acc.qtyPerPc : 0;
                 const damaged = acc.damagedPcs !== '' ? acc.damagedPcs : 0;
@@ -1127,8 +1494,8 @@
                 if(rowEl) rowEl.innerText = `RS. ${netBatchCost.toLocaleString('en-PK', {maximumFractionDigits: 2})}`;
 
                 if (acc.name) {
-                    let typeDesc = calcType === 'per_pc_multiplier' ? `Per Piece Multiplier (Qty: ${paramVal})` : `Carton Proportionate (${paramVal} pcs/ctn)`;
-                    toyAccBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${acc.name}</b> (${typeDesc} | Rate: Rs.${rate} | Gross: Rs.${grossBatchCost.toFixed(2)})</span><span>RS. ${netBatchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
+                    let typeDesc = calcType === 'per_pc_multiplier' ? `Per Piece Multiplier (Qty: ${paramVal}, Wt: ${wtGrams}g)` : `Carton Proportionate (${paramVal} pcs/ctn, Wt: ${wtGrams}g)`;
+                    toyAccBreakdown.innerHTML += `<div class="breakdown-item"><span><b>${acc.name}</b> (${typeDesc} | Rate: Rs.${rate})</span><span>RS. ${netBatchCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
                 }
             });
 
@@ -1136,10 +1503,11 @@
             wastageBreakdownList.innerHTML = '';
             
             wastageBreakdownList.innerHTML += `<div class="breakdown-item"><span><b>Granules Material Wastage:</b></span><span>RS. ${totalGranulesWastageCostBulk.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
+            wastageBreakdownList.innerHTML += `<div class="breakdown-item"><span><b>Moulding Wastage:</b></span><span>RS. ${totalMouldingWastageCostBulk.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
             wastageBreakdownList.innerHTML += `<div class="breakdown-item"><span><b>Contractor Labor Damages/Extras:</b></span><span>RS. ${totalLaborWastageCostBulk.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
             wastageBreakdownList.innerHTML += `<div class="breakdown-item"><span><b>Toy Accessories Damages:</b></span><span>RS. ${totalToyAccWastageCostBulk.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
             
-            const totalCombinedWastage = totalGranulesWastageCostBulk + totalLaborWastageCostBulk + totalToyAccWastageCostBulk;
+            const totalCombinedWastage = totalGranulesWastageCostBulk + totalMouldingWastageCostBulk + totalLaborWastageCostBulk + totalToyAccWastageCostBulk;
             wastageBreakdownList.innerHTML += `<div class="breakdown-item" style="font-weight: bold; border-top: 1px solid var(--border); margin-top: 4px; padding-top: 4px;"><span><b>TOTAL WASTAGE &amp; DAMAGES COST:</b></span><span>RS. ${totalCombinedWastage.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
 
             const packingCost = parseFloat(document.getElementById('packingCost').value) || 0;
@@ -1153,9 +1521,8 @@
             batchBreakdown.innerHTML = '';
             
             granules.forEach(g => {
-                const wastage = 1 + ((g.wastagePct || 0) / 100);
-                const totalKg = (((g.weight || 0) * wastage) * batchPcs) / 1000;
-                const gradeCost = (((g.weight || 0) * wastage) / 1000) * (g.rate || 0) * batchPcs;
+                const totalKg = (((g.weight || 0) * batchPcs) + ((g.weight || 0) * (g.wastagePcs || 0))) / 1000;
+                const gradeCost = totalKg * (g.rate || 0);
                 batchBreakdown.innerHTML += `<div class="breakdown-item"><span>📦 <b>GRANULES (${g.part || 'PART'}):</b> ${totalKg.toFixed(2)} KG</span><span>RS. ${gradeCost.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
             });
 
@@ -1176,9 +1543,9 @@
             });
 
             mouldingItems.forEach(m => {
-                const mouldingBatchTotal = (m.cost || 0) * batchPcs;
+                const mouldingBatchTotal = ((m.rate || 0) * batchPcs) + ((m.rate || 0) * (m.wastagePcs || 0));
                 if(m.part) {
-                    batchBreakdown.innerHTML += `<div class="breakdown-item"><span>🛠️ <b>MOULDING (${m.part} ON ${m.machine || 'CUSTOM'}):</b></span><span>RS. ${mouldingBatchTotal.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
+                    batchBreakdown.innerHTML += `<div class="breakdown-item"><span>🛠️ <b>MOULDING (${m.part}):</b></span><span>RS. ${mouldingBatchTotal.toLocaleString('en-PK', {maximumFractionDigits: 0})}</span></div>`;
                 }
             });
 
@@ -1231,21 +1598,23 @@
             `;
 
             const totalMouldingBulk = totalMouldingCostPerPc * batchPcs;
+            const mouldingWastagePerPc = totalMouldingWastageCostBulk / batchPcs;
             document.getElementById('mouldingSubtotal').innerHTML = `
                 <b>MOULDING COST CALCULATIONS:</b><br>
                 • Per Piece Cost: <b>RS. ${totalMouldingCostPerPc.toFixed(2)}</b><br>
-                • Bulk Batch Cost (${batchPcs.toLocaleString()} pcs): <b>RS. ${totalMouldingBulk.toLocaleString('en-PK', {maximumFractionDigits: 2})}</b>
+                • Bulk Batch Cost (${batchPcs.toLocaleString()} pcs): <b>RS. ${totalMouldingBulk.toLocaleString('en-PK', {maximumFractionDigits: 2})}</b><br>
+                • Moulding Wastage Impact: <b>RS. ${mouldingWastagePerPc.toFixed(2)} / pc</b>
             `;
 
             document.getElementById('importAccSubtotal').innerHTML = `
                 <b>CHINA IMPORT LANDED COST ENGINE:</b><br>
-                • Converts RMB rate using Exchange Rate, adds freight per KG based on weight in grams, and automatically synchronizes landed costs into Section 7.
+                • Converts RMB rate using Exchange Rate, adds freight per KG based on weight in grams, and automatically synchronizes landed costs & weights into Section 7.
             `;
 
             const totalToyAccBulk = totalToyAccCostPerPc * batchPcs;
             const toyAccWastagePerPc = totalToyAccWastageCostBulk / batchPcs;
             document.getElementById('toyAccSubtotal').innerHTML = `
-                <b>TOY ACCESSORIES CALCULATIONS (CHINA & LOCAL):</b><br>
+                <b>TOY ACCESSORIES CALCULATIONS (CHINA & LOCAL WITH GRAMS):</b><br>
                 • Per Piece Cost: <b>RS. ${totalToyAccCostPerPc.toFixed(4)}</b><br>
                 • Total Accessories Pool / Share Cost (${batchPcs.toLocaleString()} pcs): <b>RS. ${totalToyAccBulk.toLocaleString('en-PK', {maximumFractionDigits: 2})}</b><br>
                 • Damaged / Wastage Added Amount: <b>RS. ${toyAccWastagePerPc.toFixed(4)} / pc</b> (Total Added Bulk Value: +RS. ${totalToyAccWastageCostBulk.toLocaleString('en-PK', {maximumFractionDigits: 2})})
@@ -1268,9 +1637,6 @@
             document.getElementById('sumProfit').innerText = `RS. ${profitVal.toFixed(2)}`;
             document.getElementById('sumSelling').innerText = `RS. ${sellingPrice.toFixed(2)}`;
         }
-
-        resetSoftware();
     </script>
  </body>
 </html>
-    
